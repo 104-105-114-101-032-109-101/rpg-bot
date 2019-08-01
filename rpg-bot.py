@@ -1,13 +1,15 @@
 import discord
 from random import randint, choice
 
-token = "INSERT TOKEN HERE"
+
+with open('C:\\Users\\Nicholas\\Discord-Bots\\tokens\\rpg-bot.txt', 'r') as f:
+    token = f.readline()
 
 players = ["350807294004559901", "469586367383601172", "363709396867481600", "350807294004559901", "350807294004559901",
            "596412080031006755", "363041660130557963"]
 
-names = {"marlon":"350807294004559901", "pedro":"469586367383601172", "nicholas":"363709396867481600",
-         "gabriel":"596412080031006755", "marcos":"363041660130557963", "bot":"596575148467945472"}
+names = {"marlon": "350807294004559901", "pedro": "469586367383601172", "nicholas": "363709396867481600",
+         "gabriel": "596412080031006755", "marcos": "363041660130557963", "bot": "596575148467945472"}
 
 insults = [", foca no jogo, porra", "para de fazer merda por um minuto", ", anda logo!", " fodeu a sessão"
            ", daqui a pouco o mestre vai provocar um acidente para acabar logo com isso", " tem que ser expulso!"
@@ -36,16 +38,33 @@ async def on_message(message):
             player = choice(players)
         else:
             content = content.replace(" ", "")[8:]
-            player = names[content]
+            try:
+                player = names[content]
+            except KeyError:
+                player = content
+                await channel.send('{} {}'.format(player, insult))
+                return
         await channel.send('<@!{}> {}'.format(player, insult))
 
     # Do test
     if content.startswith('!teste') and (channel.name == "desenvolvimento-bot" or channel.name == "rolar-dados"):
+        if content.endswith("-v"):
+            die = max(randint(1, 20), randint(1, 20))
+            content = content[:-2]
+            result_type = "Resultado com vantagem"
+        elif content.endswith("-d"):
+            die = min(randint(1, 20), randint(1, 20))
+            content = content[:-2]
+            result_type = "Resultado com desvantagem"
+        else:
+            die = randint(1, 20)
+            result_type = "Resultado"
+
         modifier = 0
         if content != '!teste':
             modifier = int(content.replace(" ", "")[6:])
-        die = randint(1, 20)
-        await channel.send("Resultado:  {}+({}) = {}".format(die, modifier, die + modifier))
+        await channel.send("{}:  {}+({}) = {}".format(result_type, die, modifier, die + modifier))
+        return
 
     # Roll dice
     if content.startswith('!roll') and (channel.name == "desenvolvimento-bot" or channel.name == "rolar-dados"):
@@ -101,18 +120,40 @@ async def on_message(message):
             results.append(result)
 
         results = sorted(results)
-
+        # TODO: add "cagão da porra" when it results in 20/1d20 and
+        #  "tomou no cu" when 1/1d20 (also implement for !teste)
         if additional_flag:
             await channel.send("Total d{}:  {}\t\t{}\n\nTotal d{}:  {}\t\t{}".format(face_num, total, results,
                                                                                      add_face_num, add_total,
                                                                                      add_results))
         else:
             await channel.send("Total:  {}\t\t{}".format(total, results))
+        return
 
     # Turn Off
     if content.startswith('!dorme'):
         await channel.send("Boa noite!")
         await client.close()
+        return
+
+    # Random name generator (alternate between a list A and a list B in which
+    if content.startswith('!random'):
+        consonants = [chr(i+97) for i in range(26)] + ["bl", "gr", "fl", "fr", "ch", "sh", "br", "pr", "tr", "th", "pl"]
+        vowels = ["a", "e", "i", "o", "u"]
+        consonants = [x for x in consonants if x not in vowels]
+        length = 5
+        long = False
+        if not content.endswith('!random'):
+            length = int(content.split()[-1])
+            if not (0 < length < 201):
+                long = True
+                await channel.send("Esta aí é longa demais ( ͡° ͜ʖ ͡°)")
+        if not long:
+            word = ""
+            for x in range(length):
+                word += str(consonants[randint(0, 26)] if x % 2 == 0 else vowels[randint(0, 4)])
+            await channel.send(word)
+            return
 
     # Help
     if content.startswith('!help'):
@@ -123,14 +164,24 @@ async def on_message(message):
                            "\n\n\t*Exemplo com mais dados:*\n\t`!roll 2d20 +5 and 2d6` rola 2 dados de 20 faces e "
                            "adiciona 5 ao resultado. Depois, rola 2 dados de 6 faces\n\n\n"
                            "**!teste**: Faz um teste de perícia"
-                           "\n\t*Exemplo:* `!teste +4` rola 1d20 e soma 4 ao resultado\n\n\n**!insulto**:"
-                           "Faz um insulto randômico a um jogador\n\t*Exemplo simples:* `!insulto` escolhe um jogador"
-                           "aleatoriamente\n\n\t*Exemplo direcionado:* "
-                           "`!insulto nicholas` insulta o jogador cujo primeiro nome é \"nicholas\""
+                           "\n\t*Exemplo simples:*\n\t`!teste -2` rola 1d20 e subtrai 2 do resultado"
+                           "\n\n\t*Exemplo com vantagem:*\n\t`!teste +5 -v` rola 2d20, escolhe o maior dado"
+                           " e soma 5 ao resultado\n\n\t*Exemplo com desvantagem:*\n\t`!teste +1 -d` rola 2d20,"
+                           " escolhe o menor dado e soma 1 ao resultado"
+                           "\n\n\n**!insulto**: Faz um insulto randômico a um jogador"
+                           "\n\t*Exemplo simples:*\n\t`!insulto` escolhe um jogador aleatoriamente"
+                           "\n\n\t*Exemplo direcionado:* "
+                           "\n\t`!insulto bullywug` faz um insulto direcionado ao nome \"bullywug\""
+                           "\n\n\t*Exemplo direcionado a um jogador:* "
+                           "\n\t`!insulto nicholas` notifica e insulta o jogador cujo primeiro nome é \"nicholas\""
+                           "\n\n\n**!random**: Aleatoriamente gera uma palavra legível de 1 a 200 caracteres"
+                           "\n\t*Exemplo simples:*\n\t`!random` gera uma palavra aleatória de 5 letras"
+                           "\n\n\t*Exemplo com tamanho variável:* "
+                           "\n\t`!random 14` gera uma palavra aleatória de 14 letras"
                            "\n\n\n**!dorme**: Desliga o bot (é necessário fazer isso quando não forem mais usá-lo)"
                            "\n\n\n**!help**: Mostra os comandos do bot")
 
 
 client.run(token)
-# mover Marlon para outro canal ao falar merda
+# mover para outro canal ao falar merda
 # await move_to(channel)
