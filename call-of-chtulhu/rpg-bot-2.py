@@ -213,7 +213,7 @@ async def on_message(message):
     if (content.startswith('!abrir') or content.startswith("!open")) and (str(message.author.id) == names["rodrigo"] or str(message.author.id) == names["nicholas"]):
         if not game_started:
             game_started = True
-            with open("success.txt", "a") as file:
+            with open("success.txt", "a+") as file:
                 file.write("open session\n")
             await channel.send("A sessão está aberta!")
         else:
@@ -231,7 +231,7 @@ async def on_message(message):
                         break
                     else:
                         last_session_rolls.append(line)
-            with open("success.txt", "a") as success_file:
+            with open("success.txt", "a+") as success_file:
                 success_file.write("close session\n")
 
             # TODO: deal with the 2000 character limit may be necessary, but this won't happen in most cases
@@ -316,7 +316,7 @@ async def on_message(message):
                                 else:
                                     session_content.append(line)
                             print(session_content)
-                        with open("success.txt", "a") as success_file:
+                        with open("success.txt", "a+") as success_file:
                             if f"<@!{message.author.id}> {skill_name}" not in session_content:
                                 success_file.write(f"<@!{message.author.id}> {skill_name}\n")
                             else:
