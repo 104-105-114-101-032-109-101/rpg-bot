@@ -12,12 +12,12 @@ players = [pair[1] for pair in name_and_id]
 
 names = {pair[0]: pair[1:] for pair in names_and_ids}
 
-skills = ["accounting", "anthopology", "appraise", "archaeology", "art craft", "charm", "climb", "credit rating",
-          "cthulhu mythos", "disguise", "dodge", "drive auto", "elec repair", "fast talk", "fighting brawl",
-          "firearms handgun", "firearms rifle shotgun", "first aid", "history", "intimidate", "jump", "language", "law",
-          "library use", "listen", "locksmith", "mech repair", "medicine", "natural world", "navigate", "occult",
-          "op hv machine", "persuade", "pilot", "psychology", "psychoanalysis", "ride", "science", "sleight of hand",
-          "spot hidden", "stealth", "survival", "swim", "throw", "track"
+skills = ["accounting", "anthopology", "appraise", "archaeology", "art_craft", "charm", "climb", "credit_rating",
+          "cthulhu_mythos", "disguise", "dodge", "drive auto", "elec_repair", "fast_talk", "fighting_brawl",
+          "firearms_handgun", "firearms_rifle_shotgun", "first_aid", "history", "intimidate", "jump", "language", "law",
+          "library_use", "listen", "locksmith", "mech_repair", "medicine", "natural_world", "navigate", "occult",
+          "op_hv_machine", "persuade", "pilot", "psychology", "psychoanalysis", "ride", "science", "sleight_of_hand",
+          "spot_hidden", "stealth", "survival", "swim", "throw", "track"
           ]
 
 insults = [", foca no jogo, porra", "para de fazer merda por um minuto", ", anda logo!", " fodeu a sessão"
@@ -25,6 +25,7 @@ insults = [", foca no jogo, porra", "para de fazer merda por um minuto", ", anda
            " só consegue ir atrás de champola no RPG mesmo", ", você se sairia melhor como NPC",
            ", tinha que deixar para preparar as coisas na última hora né, animal!", " tem alinhamento chaotic merda",
            " jamais terá a capacidade intelectual para ser mestre"]
+
 
 client = discord.Client()
 
@@ -43,6 +44,7 @@ async def on_member_join(ctx):
         await channel.send("Seja bem-vindo, Deputado!")
     except Exception:
         print("DEU MERDA NO MEMBER JOIN")
+
 
 @client.event
 async def on_message(message):
@@ -65,7 +67,7 @@ async def on_message(message):
 
     # Insult
     if content.startswith('!insulto'):
-        
+
         insult = choice(insults)
         if content.endswith('!insulto'):
             player = choice(players)
@@ -122,9 +124,9 @@ async def on_message(message):
 
         # beta version
         if die_tens == 9 or result == 100:
-            await channel.send("se fudeu")
-        elif die_tens == 0:
             await channel.send("cagão da porra")
+        elif die_tens == 0:
+            await channel.send("se fudeu")
 
         return
 
@@ -213,7 +215,7 @@ async def on_message(message):
     if (content.startswith('!abrir') or content.startswith("!open")) and (str(message.author.id) == names["rodrigo"] or str(message.author.id) == names["nicholas"]):
         if not game_started:
             game_started = True
-            with open("success.txt", "a+") as file:
+            with open("success.txt", "a") as file:
                 file.write("open session\n")
             await channel.send("A sessão está aberta!")
         else:
@@ -231,7 +233,7 @@ async def on_message(message):
                         break
                     else:
                         last_session_rolls.append(line)
-            with open("success.txt", "a+") as success_file:
+            with open("success.txt", "a") as success_file:
                 success_file.write("close session\n")
 
             # TODO: deal with the 2000 character limit may be necessary, but this won't happen in most cases
@@ -248,6 +250,7 @@ async def on_message(message):
     # Skill List
     if content.startswith("!skills"):
         await channel.send("```" + " --- ".join(skills) + "```")
+        return
 
     # Skill Test
     skill_command = [argument.strip() for argument in content.split()]
@@ -316,7 +319,7 @@ async def on_message(message):
                                 else:
                                     session_content.append(line)
                             print(session_content)
-                        with open("success.txt", "a+") as success_file:
+                        with open("success.txt", "a") as success_file:
                             if f"<@!{message.author.id}> {skill_name}" not in session_content:
                                 success_file.write(f"<@!{message.author.id}> {skill_name}\n")
                             else:
