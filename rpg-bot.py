@@ -5,11 +5,12 @@ from random import randint, choice
 with open('C:\\Users\\Nicholas\\Discord-Bots\\tokens\\rpg-bot.txt', 'r') as f:
     token = f.readline()
 
-players = ["350807294004559901", "469586367383601172", "363709396867481600", "350807294004559901", "350807294004559901",
-           "596412080031006755", "363041660130557963"]
+with open("players.txt", "r", encoding="utf8") as players_file:
+    names_and_ids = [(pair.split()) for pair in players_file.readlines()]
 
-names = {"marlon": "350807294004559901", "pedro": "469586367383601172", "nicholas": "363709396867481600",
-         "gabriel": "596412080031006755", "marcos": "363041660130557963", "bot": "596575148467945472"}
+players = [pair[1] for pair in name_and_ids]
+
+names = {pair[0]: pair[1:] for pair in names_and_ids}
 
 insults = [", foca no jogo, porra", "para de fazer merda por um minuto", ", anda logo!", " fodeu a sessão"
            ", daqui a pouco o mestre vai provocar um acidente para acabar logo com isso", " tem que ser expulso!"
